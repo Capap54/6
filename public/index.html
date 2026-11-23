@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Cap-App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: rgba(217, 70, 239, 0.35);
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      background: #090414;
+      color: #f5f3ff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow-x: hidden;
+    }
+
+    body {
+      padding: 14px 12px 88px;
+      background: radial-gradient(circle at 50% 0%, #2a0d5e 0%, #090414 68%);
+    }
+
+    /* ЗАСТАВКА НА 4 СЕКУНДЫ */
+    #splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 99999;
+      background: radial-gradient(circle at center, #2b0e63 0%, #070311 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      opacity: 1;
+      transition: opacity 0.45s ease;
+    }
+
+    #splash.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .logo-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 20px;
+      border-radius: 22px;
+      background: rgba(22, 10, 48, 0.9);
+      border: 1px solid rgba(217, 70, 239, 0.75);
+      box-shadow: 0 0 28px rgba(168, 85, 247, 0.7), inset 0 0 18px rgba(217, 70, 239, 0.25);
+    }
+
+    .logo-tile {
+      width: 42px;
+      height: 52px;
+      border-radius: 12px;
+      background: #14082e;
+      border: 1px solid rgba(192, 132, 252, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 900;
+      color: #fae8ff;
+      text-shadow: 0 0 12px rgba(232, 121, 249, 0.9);
+    }
+
+    .logo-tile.neon {
+      background: linear-gradient(135deg, #7e22ce, #db2777);
+      border-color: #f5d0fe;
+      color: #ffffff;
+    }
+
+    .splash-label {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #e879f9;
+      text-shadow: 0 0 10px rgba(217, 70, 239, 0.7);
+    }
+
+    .container {
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    .header-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 18px;
+      background: #140a2e;
+      border: 1px solid rgba(168, 85, 247, 0.45);
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.28);
+      margin-bottom: 12px;
+    }
+
+    .app-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 12px rgba(217, 70, 239, 0.8);
+    }
+
+    .app-sub {
+      font-size: 11px;
+      color: #c4b5fd;
+    }
+
+    .role-tag {
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #7e22ce, #c026d3);
+      border: 1px solid #f0abfc;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      box-shadow: 0 0 14px rgba(192, 38, 211, 0.6);
+    }
+
+    .page {
+      display: none;
+      padding: 16px 14px;
+      border-radius: 18px;
+      background: #140a2e;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      box-shadow: 0 0 22px rgba(126, 34, 206, 0.28);
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .page-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .page-desc {
+      font-size: 12px;
+      color: #b794f4;
+      margin-bottom: 14px;
+    }
+
+    .label-mini {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #e9d5ff;
+      margin-bottom: 6px;
+    }
+
+    .select-box, .input-box {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 13px;
+      border: 1px solid rgba(168, 85, 247, 0.5);
+      background: #0b051a;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      outline: none;
+    }
+
+    .btn-neon {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid #f0abfc;
+      background: linear-gradient(135deg, #7e22ce, #c026d3);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 0 18px rgba(192, 38, 211, 0.55);
+      margin-bottom: 10px;
+    }
+
+    .btn-neon:active {
+      transform: scale(0.98);
+    }
+
+    .btn-sec {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 13px;
+      border: 1px solid rgba(168, 85, 247, 0.45);
+      background: #1e0f42;
+      color: #f3e8ff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .ticker-box {
+      display: none;
+      padding: 12px;
+      border-radius: 12px;
+      background: #0a0517;
+      border: 1px solid rgba(217, 70, 239, 0.5);
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .ticker-box.show {
+      display: block;
+    }
+
+    .ticker-word {
+      font-family: monospace;
+      font-size: 16px;
+      font-weight: 800;
+      color: #f0abfc;
+    }
+
+    .info-box {
+      padding: 11px 13px;
+      border-radius: 12px;
+      background: #0b051a;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      font-size: 12px;
+      color: #ddd6fe;
+      margin-bottom: 12px;
+    }
+
+    .item-card {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #1c0e3d;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      margin-bottom: 10px;
+    }
+
+    .item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .item-handle {
+      font-size: 15px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .badge {
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .badge-rare {
+      background: linear-gradient(135deg, #c026d3, #f59e0b);
+      color: #fff;
+    }
+
+    .badge-free {
+      background: rgba(34, 211, 238, 0.18);
+      color: #67e8f9;
+      border: 1px solid rgba(34, 211, 238, 0.45);
+    }
+
+    .badge-busy {
+      background: rgba(244, 63, 94, 0.18);
+      color: #fda4af;
+      border: 1px solid rgba(244, 63, 94, 0.45);
+    }
+
+    .item-sub {
+      font-size: 11px;
+      color: #c4b5fd;
+      margin-top: 6px;
+    }
+
+    /* НИЖНЕЕ МЕНЮ */
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 9000;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      padding: 8px 6px 10px;
+      background: #0d061f;
+      border-top: 1px solid rgba(192, 132, 252, 0.55);
+      box-shadow: 0 -6px 24px rgba(126, 34, 206, 0.45);
+    }
+
+    .nav-item {
+      padding: 8px 2px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #a78bfa;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, #7e22ce, #c026d3);
+      color: #ffffff;
+      border-color: #f0abfc;
+      box-shadow: 0 0 12px rgba(217, 70, 239, 0.55);
+    }
+  </style>
+</head>
+<body>
+  <div id="splash">
+    <div class="logo-box">
+      <div class="logo-tile">C</div>
+      <div class="logo-tile">A</div>
+      <div class="logo-tile">P</div>
+      <div class="logo-tile neon">A</div>
+      <div class="logo-tile neon">P</div>
+      <div class="logo-tile neon">P</div>
+    </div>
+    <div class="splash-label">NEON PURPLE • USERNAME SUITE</div>
+  </div>
+
+  <div class="container">
+    <div class="header-box">
+      <div>
+        <div class="app-title">Cap-App</div>
+        <div class="app-sub">Поиск • Оценка • Маркет • Кошелёк • Профиль</div>
+      </div>
+      <div class="role-tag">★ АДМИН</div>
+    </div>
+
+    <!-- 1. ПОИСК -->
+    <div id="page-search" class="page active">
+      <div class="page-title">Поиск и проверка юзов</div>
+      <div class="page-desc">Выбери вид юзов для поиска или проверь конкретный хэндл по 3 источникам.</div>
+
+      <label class="label-mini" for="searchTypeSelect">Вид юзов для поиска</label>
+      <select id="searchTypeSelect" class="select-box">
+        <option value="rare">Редкие корни (6–8 симв.)</option>
+        <option value="short6">Короткие (ровно 6 букв)</option>
+        <option value="clean">Обычные слова (6–8 букв)</option>
+        <option value="with_num">С цифрами на конце</option>
+        <option value="with_under">С нижним подчёркиванием (_)</option>
+      </select>
+
+      <button id="btnRunGen" class="btn-neon" type="button">Найти свободные юзы</button>
+
+      <div class="label-mini" for="directCheckInput">Или проверить свой юзернейм</div>
+      <input id="directCheckInput" class="input-box" type="text" placeholder="Введите @username или username" />
+      <button id="btnRunCheck" class="btn-sec" type="button">Проверить юзернейм</button>
+
+      <div id="searchTicker" class="ticker-box">
+        <div id="searchTickerWord" class="ticker-word">@vortexix</div>
+      </div>
+
+      <div id="searchStatus" class="info-box">Готово к запуску.</div>
+      <div id="searchResults"></div>
+    </div>
+
+    <!-- 2. ОЦЕНКА -->
+    <div id="page-val" class="page">
+      <div class="page-title">Оценка юзернейма</div>
+      <div class="page-desc">Отдельный модуль оценки редкости, длины, баллов и стоимости в TON / Stars.</div>
+
+      <input id="valNameInput" class="input-box" type="text" placeholder="Введите юзернейм для оценки" />
+      <button id="btnRunVal" class="btn-neon" type="button">Оценить юзернейм</button>
+
+      <div id="valStatus" class="info-box">Введите юзернейм и нажмите «Оценить юзернейм».</div>
+      <div id="valResults"></div>
+    </div>
+
+    <!-- 3. МАРКЕТ -->
+    <div id="page-market" class="page">
+      <div class="page-title">Маркет лотов</div>
+      <div class="page-desc">Выставь юзернейм в TON или посмотри активные лоты.</div>
+
+      <input id="lotUserInput" class="input-box" type="text" placeholder="Юзернейм лота (например: shadowix)" />
+      <input id="lotTonInput" class="input-box" type="number" min="0.1" step="0.1" placeholder="Цена в TON (например: 5)" />
+      <button id="btnAddLot" class="btn-neon" type="button">Выставить лот</button>
+      <button id="btnRefreshLots" class="btn-sec" type="button">Обновить список</button>
+
+      <div id="marketStatus" class="info-box">Загрузка лотов...</div>
+      <div id="marketResults"></div>
+    </div>
+
+    <!-- 4. КОШЕЛЁК -->
+    <div id="page-wallet" class="page">
+      <div class="page-title">Привязка кошелька</div>
+      <div class="page-desc">Укажи адрес кошелька (TON / Keeper) для вывода и сделок.</div>
+
+      <input id="walletAddrInput" class="input-box" type="text" placeholder="Вставь адрес кошелька" />
+      <button id="btnSaveWallet" class="btn-neon" type="button">Привязать кошелёк</button>
+
+      <div id="walletStatus" class="info-box">Кошелёк не привязан.</div>
+    </div>
+
+    <!-- 5. ПРОФИЛЬ -->
+    <div id="page-profile" class="page">
+      <div class="page-title">Профиль</div>
+      <div class="page-desc">Данные аккаунта и статус доступа.</div>
+
+      <div class="item-card">
+        <div class="item-top">
+          <div class="item-handle">ID: 7275857070</div>
+          <span class="badge badge-rare">АДМИН</span>
+        </div>
+        <div class="item-sub" id="profileWalletText">Кошелёк: проверяется...</div>
+        <div class="item-sub">Права: полный доступ ко всем разделам</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- НИЖНЕЕ МЕНЮ -->
+  <div class="bottom-nav">
+    <button class="nav-item active" data-page="page-search" onclick="switchPage('page-search', this)" type="button">Поиск</button>
+    <button class="nav-item" data-page="page-val" onclick="switchPage('page-val', this)" type="button">Оценка</button>
+    <button class="nav-item" data-page="page-market" onclick="switchPage('page-market', this)" type="button">Маркет</button>
+    <button class="nav-item" data-page="page-wallet" onclick="switchPage('page-wallet', this)" type="button">Кошелёк</button>
+    <button class="nav-item" data-page="page-profile" onclick="switchPage('page-profile', this)" type="button">Профиль</button>
+  </div>
+
+  <script>
+    try {
+      if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+      }
+    } catch (_) {}
+
+    // Заставка держится ровно 4 секунды
+    setTimeout(function () {
+      var sp = document.getElementById('splash');
+      if (sp) {
+        sp.classList.add('fade-out');
+        setTimeout(function () {
+          if (sp && sp.parentNode) sp.parentNode.removeChild(sp);
+        }, 500);
+      }
+    }, 4000);
+
+    function switchPage(pageId, btnEl) {
+      var pages = document.querySelectorAll('.page');
+      for (var i = 0; i < pages.length; i++) {
+        pages[i].classList.remove('active');
+      }
+      var target = document.getElementById(pageId);
+      if (target) target.classList.add('active');
+
+      var navs = document.querySelectorAll('.nav-item');
+      for (var j = 0; j < navs.length; j++) {
+        navs[j].classList.remove('active');
+      }
+      if (btnEl) btnEl.classList.add('active');
+
+      if (pageId === 'page-market') loadLots();
+      if (pageId === 'page-profile' || pageId === 'page-wallet') loadWalletInfo();
+    }
+
+    function cleanHandle(s) {
+      return String(s || '').trim().replace(/^@+/, '').toLowerCase().replace(/[^a-z0-9_]/g, '');
+    }
+
+    var ROOTS = ['vortex', 'zenith', 'kobra', 'shadow', 'pulse', 'cyber', 'ghost', 'drift', 'venom', 'frost', 'storm', 'titan', 'blade', 'spark', 'apex', 'nova', 'aura', 'echo', 'flux', 'core', 'onyx', 'volt'];
+    var SAMPLES = ['vortexon', 'shadowix', 'lynxcore', 'novapulse', 'driftfox', 'kobraven'];
+
+    function startTicker(ms) {
+      var box = document.getElementById('searchTicker');
+      var word = document.getElementById('searchTickerWord');
+      box.classList.add('show');
+      var timer = setInterval(function () {
+        word.textContent = '@' + SAMPLES[Math.floor(Math.random() * SAMPLES.length)];
+      }, 140);
+      return new Promise(function (resolve) {
+        setTimeout(function () {
+          clearInterval(timer);
+          box.classList.remove('show');
+          resolve();
+        }, ms);
+      });
+    }
+
+    function renderCheckCard(item) {
+      var badge = item.badge || { code: 'free', label: 'Свободен' };
+      var cls = badge.code === 'rare_premium' ? 'badge-rare' : (badge.code === 'taken' ? 'badge-busy' : 'badge-free');
+      var c = item.checks || {};
+      var info =
+        'Bot API: ' + (c.botApi && c.botApi.checked ? (c.botApi.taken ? 'занят' : 'ок') : '—') +
+        ' | t.me: ' + (c.tMe && c.tMe.checked ? (c.tMe.taken ? 'занят' : 'ок') : '—') +
+        ' | Fragment: ' + (c.fragment && c.fragment.checked ? (c.fragment.taken ? 'занят' : 'ок') : '—');
+
+      return (
+        '<div class="item-card">' +
+          '<div class="item-top">' +
+            '<span class="item-handle">@' + item.username + '</span>' +
+            '<span class="badge ' + cls + '">' + badge.label + '</span>' +
+          '</div>' +
+          '<div class="item-sub">' + info + '</div>' +
+        '</div>'
+      );
+    }
+
+    document.getElementById('btnRunGen').onclick = async function () {
+      var style = document.getElementById('searchTypeSelect').value;
+      var status = document.getElementById('searchStatus');
+      var out = document.getElementById('searchResults');
+      out.innerHTML = '';
+      status.textContent = 'Ищем свободные юзы (' + style + ')...';
+
+      var t = startTicker(1200);
+      try {
+        var r = await fetch('/api/generate?count=6&style=' + encodeURIComponent(style));
+        var d = await r.json();
+        await t;
+        var list = (d && d.items) || [];
+        if (!list.length) {
+          status.textContent = 'В этом проходе свободные не попались — нажми ещё раз.';
+          return;
+        }
+        status.textContent = 'Найдено свободных: ' + list.length;
+        var html = '';
+        for (var i = 0; i < list.length; i++) html += renderCheckCard(list[i]);
+        out.innerHTML = html;
+      } catch (e) {
+        await t;
+        status.textContent = 'Ошибка поиска: ' + e.message;
+      }
+    };
+
+    document.getElementById('btnRunCheck').onclick = async function () {
+      var u = cleanHandle(document.getElementById('directCheckInput').value);
+      var status = document.getElementById('searchStatus');
+      var out = document.getElementById('searchResults');
+      if (!u) {
+        status.textContent = 'Введите юзернейм для проверки.';
+        return;
+      }
+      out.innerHTML = '';
+      status.textContent = 'Проверяем @' + u + '...';
+      var t = startTicker(900);
+      try {
+        var r = await fetch('/api/check?username=' + encodeURIComponent(u));
+        var d = await r.json();
+        await t;
+        if (!d.ok) {
+          status.textContent = d.message || 'Неверный юзернейм.';
+          return;
+        }
+        status.textContent = 'Результат проверки @' + d.username;
+        out.innerHTML = renderCheckCard(d);
+      } catch (e) {
+        await t;
+        status.textContent = 'Ошибка проверки: ' + e.message;
+      }
+    };
+
+    document.getElementById('btnRunVal').onclick = function () {
+      var u = cleanHandle(document.getElementById('valNameInput').value);
+      var status = document.getElementById('valStatus');
+      var out = document.getElementById('valResults');
+      if (!u || u.length < 4) {
+        status.textContent = 'Введите юзернейм от 4 символов.';
+        return;
+      }
+      var root = ROOTS.find(function (r) { return u.indexOf(r) !== -1; });
+      var score = 45;
+      if (u.length <= 6) score += 22;
+      else if (u.length <= 8) score += 14;
+      if (root) score += 22;
+      if (!/[\d_]/.test(u)) score += 10;
+      else score -= 8;
+      score = Math.max(10, Math.min(99, score));
+      var ton = ((score / 100) * 18 + (root ? 4.5 : 0)).toFixed(1);
+      var stars = Math.round(Number(ton) * 120);
+
+      status.textContent = 'Оценка @' + u + ' готова.';
+      out.innerHTML =
+        '<div class="item-card">' +
+          '<div class="item-top">' +
+            '<span class="item-handle">@' + u + '</span>' +
+            '<span class="badge badge-rare">' + score + '/100 баллов</span>' +
+          '</div>' +
+          '<div class="item-sub">Длина: ' + u.length + ' • Корень: ' + (root || 'нет') + '</div>' +
+          '<div class="item-sub">Примерная цена: ~' + ton + ' TON / ~' + stars + ' ★</div>' +
+        '</div>';
+    };
+
+    async function loadLots() {
+      var st = document.getElementById('marketStatus');
+      var box = document.getElementById('marketResults');
+      try {
+        var r = await fetch('/api/market');
+        var d = await r.json();
+        var list = (d && d.listings) || [];
+        st.textContent = 'Активных лотов: ' + list.length;
+        var html = '';
+        for (var i = 0; i < list.length; i++) {
+          html +=
+            '<div class="item-card">' +
+              '<div class="item-top">' +
+                '<span class="item-handle">@' + list[i].username + '</span>' +
+                '<span class="badge badge-rare">' + list[i].priceTon + ' TON</span>' +
+              '</div>' +
+              '<div class="item-sub">Продавец: ' + (list[i].sellerName || 'Admin') + '</div>' +
+            '</div>';
+        }
+        box.innerHTML = html;
+      } catch (_) {
+        st.textContent = 'Не удалось загрузить лоты.';
+      }
+    }
+
+    document.getElementById('btnAddLot').onclick = async function () {
+      var u = cleanHandle(document.getElementById('lotUserInput').value);
+      var p = Number(document.getElementById('lotTonInput').value);
+      var st = document.getElementById('marketStatus');
+      if (!u || !p || p <= 0) {
+        st.textContent = 'Введите юзернейм и цену в TON.';
+        return;
+      }
+      var r = await fetch('/api/market', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, priceTon: p })
+      });
+      var d = await r.json();
+      if (d.ok) {
+        document.getElementById('lotUserInput').value = '';
+        document.getElementById('lotTonInput').value = '';
+        await loadLots();
+      } else {
+        st.textContent = d.error || 'Ошибка добавления лота.';
+      }
+    };
+
+    document.getElementById('btnRefreshLots').onclick = loadLots;
+
+    document.getElementById('btnSaveWallet').onclick = async function () {
+      var addr = document.getElementById('walletAddrInput').value.trim();
+      var st = document.getElementById('walletStatus');
+      if (!addr) {
+        st.textContent = 'Введите адрес кошелька.';
+        return;
+      }
+      var r = await fetch('/api/wallet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: addr })
+      });
+      var d = await r.json();
+      st.textContent = d.ok ? 'Привязан кошелёк: ' + d.address : (d.error || 'Ошибка');
+      loadWalletInfo();
+    };
+
+    async function loadWalletInfo() {
+      try {
+        var r = await fetch('/api/wallet');
+        var d = await r.json();
+        var addr = (d && d.address) || 'не указан';
+        document.getElementById('walletStatus').textContent = 'Текущий кошелёк: ' + addr;
+        document.getElementById('profileWalletText').textContent = 'Кошелёк: ' + addr;
+      } catch (_) {}
+    }
+
+    loadWalletInfo();
+  </script>
+</body>
+</html>
